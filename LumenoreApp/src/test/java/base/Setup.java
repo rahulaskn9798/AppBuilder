@@ -7,10 +7,14 @@ import java.util.Properties;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.safari.SafariDriver;
+import org.openqa.selenium.safari.SafariOptions;
 import org.openqa.selenium.support.PageFactory;
 import org.testng.annotations.AfterTest;
 import org.testng.annotations.BeforeTest;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
@@ -30,12 +34,19 @@ public class Setup {
 	public String passWord;
 	public LoginPage loginPage ;
 	public LandingPage landingPage;
-	
+	public static String env;
     
     @BeforeTest
-	public void setUp() throws IOException, InterruptedException{
+    @Parameters({"environment"})
+	public void setUp(@Optional("environment") String environment ) throws IOException, InterruptedException{
 	    System.out.println("Setup Open");
-		
+	    
+		ChromeOptions options = new ChromeOptions();
+	 	options.addArguments("--headless=new");
+	 	
+	 	SafariOptions options_S = new SafariOptions();
+	 	
+	 	
 	    if(driver==null) {
 		fr = new FileReader(System.getProperty("user.dir")+"/src/test/resources/configfiles/config.properties");
 	   fr1 = new FileReader(System.getProperty("user.dir")+"/src/test/resources/configfiles/locators.properties");
@@ -44,19 +55,21 @@ public class Setup {
 	                      }
 		if(prop.getProperty("browser").equalsIgnoreCase("chrome")){
             WebDriverManager.chromedriver().setup();
-			driver = new ChromeDriver();	
+			driver = new ChromeDriver(options);	
 		}
 		else if(prop.getProperty("browser").equalsIgnoreCase("safari")){
 			 WebDriverManager.safaridriver().setup();
-			 driver = new SafariDriver();
+			 driver = new SafariDriver(options_S);
 		}
+		
+	
 		
 		loginPage = PageFactory.initElements(driver, LoginPage.class);
 		landingPage = PageFactory.initElements(driver, LandingPage.class);
 		
-		 
+		 env=environment;
 		// from here we are giving environment to run the test cases
-		setEnvironment("beta");
+		setEnvironment(env);
 		System.out.println("The function is to validate SignIn");
 		driver.get(url);
         loginPage.signIn(userName, passWord);
@@ -71,13 +84,30 @@ public class Setup {
 	      driver.close();
 	      System.out.println("Tear down Successfull");
                
-}
+} 
 		
 public void setEnvironment(String env) {
-	if (env.equals("beta")) {
-		url = prop.getProperty("url");
-		userName = prop.getProperty("user");
-		passWord = prop.getProperty("password");	
+	if (env.equalsIgnoreCase("beta")) {
+		url = prop.getProperty("urlBeta");
+		userName = prop.getProperty("userBeta");
+		passWord = prop.getProperty("passwordBeta");	
+	}
+	else if(env.equalsIgnoreCase("alpha")) {
+		url = prop.getProperty("urlAlpha");
+		userName = prop.getProperty("userAlpha");
+		passWord = prop.getProperty("passwordAlpha");	
+		
+	}
+	else if(env.equalsIgnoreCase("qa")) {
+		url = prop.getProperty("urlQa");
+		userName = prop.getProperty("userQa");
+		passWord = prop.getProperty("passwordQa");	
+		
+	}
+	else if(env.equalsIgnoreCase("trng")) {
+		url = prop.getProperty("urlTrng");
+		userName = prop.getProperty("userTrng");
+		passWord = prop.getProperty("passwordTrng");	
 	}
 }
 
